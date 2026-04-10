@@ -1,0 +1,40 @@
+---
+description: Log only coding-related work to the memory bank
+alwaysApply: true
+---
+
+# Memory Bank Logging
+
+Only update `memory_bank/ai_assistant_logging.md` when the request is related to coding work, such as:
+
+- code changes
+- bug fixes
+- bug investigation
+- implementation work in the codebase
+- explicit user requests to log coding work
+
+Do not log:
+
+- unrelated chat
+- rule-only updates such as `.cursor/rules/*` or `.cursorrules`
+- documentation-only or memory-bank-only updates
+- configuration-only changes unless they are part of a coding task the user wants logged
+
+When logging:
+
+- add the newest entry at the top of the file
+- include a date/timepoint heading
+- keep the fields `userRequest` and `summaryAICompletion`
+- summarize what was changed in clear, concise language
+- prefer bullet points under `summaryAICompletion` when listing multiple actions
+
+Example:
+
+```md
+## 2026-04-09 - coding task update
+userRequest: fix the parser bug in the ARC agent.
+summaryAICompletion: 
+- updated the parser
+- added safe fallback handling
+- verified the edited files had no linter errors.
+```

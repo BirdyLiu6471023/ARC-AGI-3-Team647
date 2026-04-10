@@ -1,0 +1,22 @@
+---
+description: Review and maintain memory bank files during project work
+alwaysApply: true
+---
+
+# Memory Bank Workflow
+
+Before starting substantial work:
+
+- review the codebase state
+- review `memory_bank/project_context.md`
+- review `memory_bank/technical_plan.md`
+- review what is already built
+
+When working with files in `memory_bank/`:
+
+- read `memory_bank/memory_instructions.md` first
+- keep each memory-bank file aligned with its stated purpose
+
+When a request causes a major project-direction or technical-plan change:
+
+- update `memory_bank/project_context.md` and/or `memory_bank/technical_plan.md` as needed
