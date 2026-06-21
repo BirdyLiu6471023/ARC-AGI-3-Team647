@@ -32,13 +32,17 @@ wheels = [
 [[package]]
 name = "arc-agi-3-team647"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "arc-agi" },
+    { name = "numpy" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "arc-agi", specifier = ">=0.9.6" }]
+requires-dist = [
+    { name = "arc-agi", specifier = ">=0.9.6" },
+    { name = "numpy", specifier = ">=2.0" },
+]
 
 [[package]]
 name = "arcengine"

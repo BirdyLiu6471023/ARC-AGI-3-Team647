@@ -1,72 +1,64 @@
-import argparse
+"""Entry point: run Team647 agents on the official ARC-AGI-3-Agents framework.
+
+This is the minimal local entry point for stepping a game. It does the plumbing
+needed to run our agents (which live in ``src/arc647/agents`` and subclass the
+framework's ``Agent``) under the framework's own ``main()`` / ``Swarm``:
+
+1. Put the ARC-AGI-3-Agents submodule and our ``src`` on ``sys.path``.
+2. Load the framework's ``.env.example`` (server defaults: three.arcprize.org)
+   then our repo ``.env`` (ARC_API_KEY), without overriding already-set vars.
+3. Register our agents into the framework's ``AVAILABLE_AGENTS`` dict.
+4. Delegate to the framework's ``main()`` for arg parsing and the run loop.
+
+Run it through the submodule's environment (which ships every framework
+dependency) via WSL, e.g.::
+
+    uv run --project external/ARC-AGI-3-Agents python smoke_test.py \
+        --agent=actioneffect --game=ls20
+    uv run --project external/ARC-AGI-3-Agents python smoke_test.py \
+        --agent=randomagent --game=ls20
+
+Agent names are the lowercased class names: ``actioneffect`` and ``randomagent``.
+Set ``OPERATION_MODE=offline`` in the environment for local engine play.
+"""
+
+from __future__ import annotations
+
 import sys
+from pathlib import Path
 
-from arc_agi import Arcade, OperationMode
-from arcengine import GameAction
+ROOT = Path(__file__).parent.resolve()
+FRAMEWORK = ROOT / "external" / "ARC-AGI-3-Agents"
 
+if not FRAMEWORK.exists():
+    raise SystemExit(
+        "ARC-AGI-3-Agents submodule missing. Run:\n"
+        "  git submodule update --init --recursive"
+    )
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Run a minimal local ARC-AGI-3 smoke test."
-    )
-    parser.add_argument(
-        "--game",
-        default="ls20",
-        help="Game id to run locally.",
-    )
-    parser.add_argument(
-        "--steps",
-        type=int,
-        default=3,
-        help="Number of ACTION1 steps to take.",
-    )
-    parser.add_argument(
-        "--render-terminal",
-        action="store_true",
-        help="Render the game in the terminal for debugging.",
-    )
-    parser.add_argument(
-        "--mode",
-        choices=("offline", "online"),
-        default="offline",
-        help="Toolkit operation mode to use.",
-    )
-    return parser.parse_args()
+# 1. Make the framework package and our agents importable.
+sys.path.insert(0, str(FRAMEWORK))
+sys.path.insert(0, str(ROOT / "src"))
+
+# 2. Load env: framework defaults first, then our key (no override of set vars).
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(dotenv_path=FRAMEWORK / ".env.example")
+load_dotenv(dotenv_path=ROOT / ".env", override=True)
 
 
 def main() -> None:
-    args = parse_args()
-    render_mode = "terminal" if args.render_terminal else None
-    operation_mode = (
-        OperationMode.OFFLINE if args.mode == "offline" else OperationMode.ONLINE
-    )
+    # 3. Register our agents into the framework's registry.
+    from agents import AVAILABLE_AGENTS  # noqa: E402  (heavy: pulls framework deps)
 
-    arc = Arcade(operation_mode=operation_mode)
-    env = arc.make(args.game, render_mode=render_mode)
+    from arc647.agents import register  # noqa: E402
 
-    print(f"Running smoke test for game: {args.game}")
-    print(f"Operation mode: {args.mode}")
+    register(AVAILABLE_AGENTS)
 
-    if env is None:
-        print(
-            "Unable to create the environment. In offline mode this usually means "
-            "no local ARC game environments are currently available."
-        )
-        print(
-            "Try again once local game sources are available, or use "
-            "`--mode online` with a configured `ARC_API_KEY`."
-        )
-        sys.exit(1)
+    # 4. Hand off to the framework's CLI (arg parsing + swarm run loop).
+    import main as framework_main  # noqa: E402  (external/.../main.py)
 
-    print(f"Available actions: {env.action_space}")
-
-    observation = None
-    for step in range(args.steps):
-        observation = env.step(GameAction.ACTION1)
-        print(f"Step {step + 1}: {observation}")
-
-    print("Scorecard:")
-    print(arc.get_scorecard())
+    framework_main.main()
 
 
 if __name__ == "__main__":

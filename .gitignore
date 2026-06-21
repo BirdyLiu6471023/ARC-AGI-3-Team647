@@ -134,6 +134,10 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# ARC-AGI-3 toolkit runtime artifacts (downloaded games, run recordings)
+environment_files/
+recordings/
+
 # Environments
 .env
 .envrc
